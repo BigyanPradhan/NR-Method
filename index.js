@@ -2,12 +2,19 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const math = require('mathjs'); // Import the math.js library
-
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use("/css", express.static("css"));
+app.use("/resources", express.static("resources"));
+
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
-});
+})
+
+app.post('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+})
 
 app.post('/solve', (req, res) => {
     // Get user inputs
@@ -23,9 +30,7 @@ app.post('/solve', (req, res) => {
     let iteration = 0;
     let xVal = initialGuess;
 
-    // Initialize results HTML
-    let resultsHTML = `<b>Equation = ${equationInput} <br> Initial Guess = ${initialGuess} <br> The Solution correct to ${tol} digits is found by: </b>
-    <table><tr><th>Iteration</th><th>x</th><th>f(x)</th><th>f'(x)</th></tr>`;
+    let resultsHTML= `<table><tr><th>Iteration</th><th>x</th><th>f(x)</th><th>f'(x)</th></tr>`;
 
     // Define the equation as a function
     const equationFunction = math.parse(equationInput).compile();
@@ -38,7 +43,6 @@ app.post('/solve', (req, res) => {
 
             // Check for convergence
             if (Math.abs(fxVal) < tolerance) {
-                resultsHTML += `<br><tr><td>Converged to solution:</td><td><b>${xVal.toFixed(tol)}</b></td></tr>`;
                 break;
             }
 
@@ -46,7 +50,7 @@ app.post('/solve', (req, res) => {
             xVal = xVal - fxVal / dfxVal;
 
             // Append current iteration details to results HTML
-            resultsHTML += `<tr><td>${iteration}</td><td>${xVal.toFixed(6)}</td><td>${fxVal.toFixed(6)}</td><td>${dfxVal.toFixed(6)}</td></tr>`;
+            resultsHTML += `<tr><td>${iteration}</td><td>${xVal.toFixed(6)}</td><td>${fxVal.toFixed(7)}</td><td>${dfxVal.toFixed(6)}</td></tr>`;
 
             iteration++;
         } catch (error) {
@@ -63,8 +67,36 @@ app.post('/solve', (req, res) => {
     resultsHTML += '</table>';
 
     // Display the results
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Newton-Raphson Solver</title>
+        <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    </head>
+    <body background="resources/mcsc.png">
+        <b>
+        <h1>Newton-Raphson </h1>
+        <h1>Solver</h1>
+                <form id="solver-form" action="/" method="post">
+                <div class="prev">
+                <p> Equation = ${equationInput} </p>
+                <p>Initial Guess = ${initialGuess} </p>
+                <p>The Solution correct to ${tol} digits is found by:</p>
+                </div>
+                <div class="text">
+                <p>${resultsHTML}</p>
+                <p>Converged to solution:${xVal.toFixed(tol)}</p>
 
-    res.send(resultsHTML);
+                <center>
+                    <input type="submit" class="btn" value="Back">
+                </center>
+                </div>
+                </form>
+        </b>
+    </body>
+    </html>
+`);
 });
 
 app.listen(3000, () => {
