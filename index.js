@@ -50,7 +50,8 @@ app.post('/solve', (req, res) => {
             xVal = xVal - fxVal / dfxVal;
 
             // Append current iteration details to results HTML
-            resultsHTML += `<tr><td>${iteration}</td><td>${xVal.toFixed(6)}</td><td>${fxVal.toFixed(7)}</td><td>${dfxVal.toFixed(6)}</td></tr>`;
+            resultsHTML += `<tr><td>${iteration}</td><td>${xVal.toFixed(6)}</td><td>${fxVal.toFixed(7)}</td>
+            <td>${dfxVal.toFixed(6)}</td></tr>`;
 
             iteration++;
         } catch (error) {
